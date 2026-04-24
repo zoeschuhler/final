@@ -36,16 +36,6 @@ requested_loan_amount = st.number_input(
     step=500
 )
 
-granted_loan_amount = st.number_input(
-    "Granted Loan Amount",
-    min_value=0,
-    value=0,
-    step=500,
-    help=(
-        "This is included because the saved model may expect it. "
-        "If you retrain the model without leakage variables, remove this input."
-    )
-)
 
 fico_score = st.number_input(
     "FICO Score",
