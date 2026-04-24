@@ -14,6 +14,10 @@ st.write(
     "to predict whether a loan application is likely to be approved."
 )
 
+# ------------------------------------------------------------
+# Load model
+# ------------------------------------------------------------
+
 @st.cache_resource
 def load_model():
     with open("my_model.pkl", "rb") as file:
@@ -27,6 +31,10 @@ if hasattr(model, "feature_names_in_"):
 else:
     expected_columns = None
 
+# ------------------------------------------------------------
+# User inputs
+# ------------------------------------------------------------
+
 st.header("Enter Loan Applicant Information")
 
 requested_loan_amount = st.number_input(
@@ -35,7 +43,6 @@ requested_loan_amount = st.number_input(
     value=10000,
     step=500
 )
-
 
 fico_score = st.number_input(
     "FICO Score",
@@ -123,8 +130,11 @@ ever_bankrupt_or_foreclose = st.selectbox(
     ]
 )
 
+# ------------------------------------------------------------
+# Build input dataframe
+# ------------------------------------------------------------
+
 raw_input = pd.DataFrame({
-    "Granted_Loan_Amount": [granted_loan_amount],
     "Requested_Loan_Amount": [requested_loan_amount],
     "FICO_score": [fico_score],
     "Monthly_Gross_Income": [monthly_gross_income],
@@ -144,12 +154,20 @@ if expected_columns is not None:
 else:
     model_input = encoded_input
 
+# ------------------------------------------------------------
+# Optional: show model input
+# ------------------------------------------------------------
+
 with st.expander("View model input data"):
     st.write("Raw input:")
     st.dataframe(raw_input)
 
     st.write("Encoded model input:")
     st.dataframe(model_input)
+
+# ------------------------------------------------------------
+# Prediction
+# ------------------------------------------------------------
 
 if st.button("Predict Loan Approval"):
     try:
@@ -179,12 +197,23 @@ if st.button("Predict Loan Approval"):
         st.write("Error details:")
         st.code(str(e))
 
+# ------------------------------------------------------------
+# Model details
+# ------------------------------------------------------------
+
 with st.expander("Model details"):
     st.write("Model type:", type(model))
 
     if expected_columns is not None:
         st.write("Number of expected model columns:", len(expected_columns))
         st.write(expected_columns)
+
+        if "Granted_Loan_Amount" in expected_columns:
+            st.warning(
+                "Warning: This saved model still expects Granted_Loan_Amount. "
+                "That means the model.pkl file may have been trained with a leakage variable. "
+                "Retrain and re-save the model without Granted_Loan_Amount."
+            )
     else:
         st.warning(
             "This model does not expose feature_names_in_. If prediction fails, "
